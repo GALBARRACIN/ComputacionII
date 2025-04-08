@@ -20,20 +20,20 @@ El propósito de este proyecto es consolidar la comprensión de cómo funcionan 
 
 ## 🧩 Estructura del Proyecto
 
-proyecto_procesos/ 
-│ ├── main.py # Menú principal interactivo 
-└── ejercicios/ 
-├── init.py # Archivo necesario para tratar la carpeta como paquete 
-├── ejercicio_01_padre_hijo.py 
-├── ejercicio_02_doble_bifurcacion.py 
-├── ejercicio_03_exec.py 
-├── ejercicio_04_secuencia_controlada.py 
-├── ejercicio_05_zombi_temporal.py 
-├── ejercicio_06_huerfano_init.py 
-├── ejercicio_07_multiproceso_paralelo.py 
-├── ejercicio_08_servidor_multiproceso.py 
-├── ejercicio_09_detectar_zombis.py 
-└── ejercicio_10_inyeccion_comandos.py
+- proyecto_procesos/ 
+- │ ├── main.py # Menú principal interactivo 
+- └── ejercicios/ 
+- ├── init.py # Archivo necesario para tratar la carpeta como paquete 
+- ├── ejercicio_01_padre_hijo.py 
+- ├── ejercicio_02_doble_bifurcacion.py 
+- ├── ejercicio_03_exec.py 
+- ├── ejercicio_04_secuencia_controlada.py 
+- ├── ejercicio_05_zombi_temporal.py 
+- ├── ejercicio_06_huerfano_init.py 
+- ├── ejercicio_07_multiproceso_paralelo.py 
+- ├── ejercicio_08_servidor_multiproceso.py 
+- ├── ejercicio_09_detectar_zombis.py 
+- └── ejercicio_10_inyeccion_comandos.py
 
 
 Cada archivo de ejercicio implementa una función pública `ejecutar()` que es invocada desde el `main.py` al elegir la opción correspondiente del menú.
