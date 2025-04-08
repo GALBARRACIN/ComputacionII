@@ -59,21 +59,12 @@ Archivo: `4_zombi_huerfano.md`
 
 ---
 
-### 5. Ejercicios Prácticos  
-Archivo: `5_ejercicios_practicos.md`
-
-- Actividades para reforzar lo aprendido
-- Desde ejemplos simples hasta desafíos más avanzados
-- Implementación de un servidor multiproceso (opcional)
-
----
-
 ## 🧪 Carpeta de Ejemplos
 
 Todos los ejemplos prácticos se encuentran en la carpeta `ejemplos/`.
 
 ```bash
-ejemplos/
+Ejercicios/
 ├── ejemplo_fork.py         # Crea un proceso hijo con fork()
 ├── ejemplo_exec.py         # Reemplaza el proceso con exec()
 ├── ejemplo_wait.py         # Sincroniza procesos con wait()
