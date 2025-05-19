@@ -1,0 +1,15 @@
+import os  # Importamos el módulo OS para manipular archivos y FIFOs en Linux
+
+# Definir la ruta del FIFO en el sistema de archivos
+fifo_path = "/tmp/test_fifo"
+
+# Verificar si el FIFO ya existe; si no, se crea con os.mkfifo()
+if not os.path.exists(fifo_path):
+    os.mkfifo(fifo_path)  # Crear el FIFO en la ubicación especificada
+
+print("Esperando datos en el FIFO...")  # Indicamos que el lector está activo pero bloqueado
+
+# Abrimos el FIFO en modo lectura. Este paso bloquea la ejecución hasta que haya un escritor
+with open(fifo_path, "r") as fifo:
+    mensaje = fifo.read()  # Leer todo el contenido disponible en el FIFO
+    print(f"Lector recibió: {mensaje}")  # Imprimimos el mensaje recibido
