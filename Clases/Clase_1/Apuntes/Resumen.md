@@ -1,4 +1,4 @@
-# Resumen Pedagógico 
+# Resumen
 
 # Clase 1: Introducción a Git y Unix/Linux
 
