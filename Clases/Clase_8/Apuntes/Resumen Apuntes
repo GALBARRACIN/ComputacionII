@@ -1,0 +1,50 @@
+### **Resumen de todo lo visto** 🚀  
+
+A lo largo de nuestra conversación, hemos explorado en detalle **procesos y concurrencia en Python** con `multiprocessing`.   
+
+---
+
+### **🔹 Fundamentos de Procesos en Python**  
+✅ Diferencia entre **procesos** e **hilos** → Un proceso tiene su propio espacio de memoria, mientras que los hilos comparten recursos dentro de un mismo proceso.  
+✅ Ventajas de `multiprocessing` frente a `threading` → Evita el **GIL (Global Interpreter Lock)**, permitiendo verdadero paralelismo.  
+✅ Creación de procesos con `Process()` → Uso de `start()`, `join()`, `terminate()` y `is_alive()`.  
+
+📌 **Ejercicio 1** → Creación y ejecución de procesos con `multiprocessing.Process`.  
+
+---
+
+### **🔹 Comunicación entre Procesos**  
+✅ **`Pipe()`** → Comunicación **rápida** entre dos procesos.  
+✅ **`Queue()`** → Escalabilidad para múltiples procesos.  
+✅ **`Manager().list()`** → Memoria compartida con acceso seguro.  
+
+📌 **Ejercicio 2** → Implementación de `Queue()` para compartir resultados de cálculo.  
+📌 **Ejercicio 5** → Pipeline productor-consumidor con `Pipe()` doble.  
+
+---
+
+### **🔹 Sincronización y Gestión de Concurrencia**  
+✅ **Condiciones de carrera** → Problema cuando varios procesos acceden a la misma variable sin control.  
+✅ **Uso de `Lock()`** → Evita que múltiples procesos modifiquen datos simultáneamente.  
+✅ **Back-off exponencial** → Estrategia para evitar bloqueos prolongados.  
+
+📌 **Ejercicio 3** → Demostración de condición de carrera y solución con `Lock()`.  
+📌 **Ejercicio 9** → Simulación de un sistema bancario con cajeros concurrentes.  
+
+---
+
+### **🔹 Multiprocessing Avanzado**  
+✅ **`Pool()`** → Manejo automático de múltiples procesos sin sobrecarga manual.  
+✅ **Memoria compartida con `Value()` y `Array()`** → Permite datos accesibles por todos los procesos.  
+✅ **Paralelismo distribuido** → Técnicas para distribuir carga de trabajo eficientemente.  
+
+📌 **Ejercicio 4** → Comparación de `multiprocessing` vs. `threading` en tareas CPU-bound.  
+📌 **Ejercicio 8** → Cálculo de números primos en paralelo con sincronización de archivos.  
+
+---
+
+### **🔹 Benchmark y Comparación de IPC**  
+✅ Medición de rendimiento de **`Pipe()` vs. `Queue()` vs. `Manager().list()`**.  
+✅ Uso de `matplotlib` para representar comparaciones gráficas.  
+
+📌 **Ejercicio 10** → Benchmark de diferentes mecanismos de comunicación en Python.  
