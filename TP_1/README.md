@@ -43,6 +43,7 @@ Generador
 
 ## 📁 Estructura del Proyecto
 
+///
 sistema_biometrico/
 ├── main.py
 ├── procesos/
@@ -62,6 +63,7 @@ sistema_biometrico/
 │   ├── ipc.py               # (reservado para futuras mejoras)
 │   └── helpers.py           # (no utilizado en esta versión)
 └── README.md
+///
 
 ## 🚀 Ejecución
 
