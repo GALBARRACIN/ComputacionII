@@ -17,7 +17,7 @@ Simular en tiempo real un sistema distribuido que:
 ## 🧱 Arquitectura General
 
 
-
+```
 Generador
    │
    ├─▶ Analizador de Frecuencia ─┐
@@ -27,7 +27,7 @@ Generador
                           Proceso Verificador
                                  ▼
                           Cadena de Bloques
-
+```
 
 
 ---
