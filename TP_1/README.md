@@ -21,8 +21,8 @@ Simular en tiempo real un sistema distribuido que:
 Generador
    │
    ├─▶ Analizador de Frecuencia ─┐
-   ├─▶ Analizador de Presión ───▶│
-   └─▶ Analizador de Oxígeno ───▶│
+   ├─▶ Analizador de Presión───▶│
+   └─▶ Analizador de Oxígeno───▶│
                                  ▼
                           Proceso Verificador
                                  ▼
