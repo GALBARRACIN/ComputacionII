@@ -1,0 +1,5 @@
+aiohttp
+
+# instalar con
+
+# pip install -r requirements.txt
