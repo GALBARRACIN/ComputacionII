@@ -1,0 +1,9 @@
+﻿aiohttp
+beautifulsoup4
+lxml
+pillow
+selenium
+aiofiles
+requests
+playwright
+pytest
