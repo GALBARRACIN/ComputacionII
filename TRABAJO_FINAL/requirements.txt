@@ -1,0 +1,31 @@
+# requirements.txt
+# ==============================================================================
+# Dependencias del "Sistema C2 Táctico"
+# ==============================================================================
+
+# --- Diseño de Bases de Datos II (MongoDB) ---
+# Driver oficial para conectar Python con MongoDB. 
+# Lo usaremos en 'src/db/mongo_setup.py' para manejar índices 2dsphere (Geoespaciales) 
+# y en 'queries.py' para ejecutar el Aggregation Framework y los 'explain'.
+pymongo==4.6.2        
+
+# --- Computación II (Redes y Concurrencia) ---
+# Framework asíncrono para gestionar la cola de tareas distribuidas en paralelo.
+# Soporta el modelo productor/consumidor que exigen en la cátedra.
+celery==5.3.6         
+
+# Cliente de Python necesario para que Celery pueda comunicarse con el contenedor 
+# de Redis (nuestro Message Broker) que definimos en el docker-compose.yml.
+redis==5.0.1          
+
+# --- Interfaz Visual y Mapeo GIS ---
+# Framework para desplegar la interfaz web interactiva del radar rápidamente.
+streamlit==1.32.0     
+
+# Librería especializada en renderizar mapas interactivos (wrapper de leaflet.js).
+# Fundamental para visualizar las coordenadas de los drones FPV en el entorno CartoDB Dark Matter.
+folium==0.15.1        
+
+# Componente puente para poder incrustar los mapas de Folium nativamente dentro 
+# de la jerarquía visual de Streamlit.
+streamlit-folium==0.19.0
