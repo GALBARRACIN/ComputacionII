@@ -1,6 +1,16 @@
 # src/db/queries.py
 
+import sys
+import os
 import pprint
+
+# ==============================================================================
+# SOLUCIÓN AL ERROR ModuleNotFoundError
+# Calculamos la ruta absoluta de la raíz del proyecto para que Python encuentre 'src'
+# ==============================================================================
+ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(ruta_raiz)
+
 from src.db.mongo_setup import get_database
 
 # ==============================================================================
@@ -20,7 +30,7 @@ def analisis_bateria_estado(coleccion):
     
     pipeline = [
         # 1. $match: Filtramos solo los registros que tengan un 'drone_id' válido.
-        # Es equivalente al WHERE en SQL.
+        # Es equivalente al WHERE en SQL. Nos aseguramos de no procesar basura.
         {"$match": {"drone_id": {"$exists": True}}},
         
         # 2. $group: Agrupamos los documentos.
@@ -35,19 +45,18 @@ def analisis_bateria_estado(coleccion):
         
         # 3. $project: Moldeamos la salida final. 
         # Decidimos qué campos mostrar y podemos redondear valores.
-        # Aquí redondeamos el promedio a 2 decimales.
+        # Aquí redondeamos el promedio a 2 decimales para que sea legible.
         {"$project": {
             "estado": "$_id",
             "bateria_promedio": {"$round": ["$bateria_promedio", 2]},
             "total_reportes": 1,
-            "_id": 0 # Ocultamos el _id original para que la salida sea más limpia
+            "_id": 0 # Ocultamos el _id original anidado para que la salida sea más limpia
         }}
     ]
     
-    # Ejecutamos el pipeline
+    # Ejecutamos el pipeline en el motor de MongoDB
     resultados = list(coleccion.aggregate(pipeline))
     pprint.pprint(resultados)
-
 
 def rastreo_proximidad_explain(coleccion):
     """
@@ -57,7 +66,7 @@ def rastreo_proximidad_explain(coleccion):
     """
     print("\n[DB II] Analizando desempeño de consulta Geoespacial con explain()...")
     
-    # Coordenadas de ejemplo (Centro de operaciones teórico)
+    # Coordenadas de ejemplo (Centro de operaciones teórico en Mendoza)
     lon_objetivo = -68.8272
     lat_objetivo = -32.8908
     
@@ -76,7 +85,8 @@ def rastreo_proximidad_explain(coleccion):
     }
     
     # CRÍTICO PARA EL EXAMEN: En lugar de usar .find(), usamos .find().explain()
-    # Le pedimos específicamente las 'executionStats' al motor de MongoDB.
+    # Le pedimos específicamente las 'executionStats' al motor de MongoDB para 
+    # ver cómo resolvió la consulta por detrás.
     explicacion = coleccion.find(query).explain()
     
     # Extraemos solo las métricas que le importan a los profesores
@@ -93,14 +103,14 @@ def rastreo_proximidad_explain(coleccion):
     print("-" * 50)
     
     # Defensa oral: Si 'totalKeysExamined' es similar a 'nReturned', y NO se
-    # escaneó toda la colección (COLLSCAN), significa que tu índice 2dsphere
-    # está funcionando a la perfección.
+    # escaneó toda la colección (un COLLSCAN), significa que tu índice 2dsphere
+    # está funcionando a la perfección y la consulta es óptima (IXSCAN).
 
 def main():
     db = get_database()
     coleccion = db['telemetria']
     
-    # Verificamos si hay datos antes de consultar
+    # Verificamos si hay datos antes de consultar para no romper la ejecución
     if coleccion.count_documents({}) == 0:
         print("[AVISO] La colección está vacía. Encendé un dron primero para generar datos.")
         return
