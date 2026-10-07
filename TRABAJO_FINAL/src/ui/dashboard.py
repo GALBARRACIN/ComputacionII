@@ -77,8 +77,9 @@ def main():
     # RENDERIZADO DEL MAPA (Folium)
     # ======================================================================
     # Inicializamos el mapa centrado en Mendoza.
-    # tiles="CartoDB dark_matter" le da el aspecto de radar táctico oscuro.
-    mapa_c2 = folium.Map(location=[-32.8908, -68.8272], zoom_start=14, tiles="CartoDB dark_matter")
+    # NOTA TÉCNICA: Usamos "OpenStreetMap" en lugar de "CartoDB" porque es open-source 
+    # y no requiere inyectar una API Key de pago para renderizar las capas de la calle.
+    mapa_c2 = folium.Map(location=[-32.8908, -68.8272], zoom_start=14, tiles="OpenStreetMap")
 
     # Iteramos sobre los resultados agrupados de Mongo
     for dron in datos:
