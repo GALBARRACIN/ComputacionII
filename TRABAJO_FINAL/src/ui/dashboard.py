@@ -29,101 +29,104 @@ def obtener_datos_drones():
     Se conecta a la BD y extrae EXCLUSIVAMENTE la última coordenada de cada dron.
     
     Justificación técnica: Si hiciéramos un find() normal, traeríamos todo el 
-    historial de vuelo, sobrecargando la memoria y dibujando mil puntos por dron.
-    Usamos el Aggregation Framework para filtrar y quedarnos con el dato más fresco.
+    historial de vuelo, sobrecargando la memoria. Usamos el Aggregation Framework 
+    para filtrar y quedarnos solo con la posición más reciente.
     """
     db = get_database()
     coleccion = db['telemetria']
     
     pipeline = [
-        # 1. $sort: Ordenamos toda la colección por timestamp de mayor a menor.
-        # Esto pone los registros más recientes al principio.
         {"$sort": {"timestamp": -1}},
-        
-        # 2. $group: Agrupamos por el identificador único del dron.
         {"$group": {
             "_id": "$drone_id",
-            # Al usar $first, nos quedamos con el primer registro del grupo 
-            # (que es el más nuevo gracias al $sort previo).
-            
-            # El campo 'location.coordinates' es un array GeoJSON [longitud, latitud].
-            # $arrayElemAt extrae el índice 1 (Latitud) y el índice 0 (Longitud).
             "lat": {"$first": {"$arrayElemAt": ["$location.coordinates", 1]}},
             "lon": {"$first": {"$arrayElemAt": ["$location.coordinates", 0]}},
-            
             "bateria": {"$first": "$battery_pct"},
             "estado": {"$first": "$status"}
         }}
     ]
-    
     return list(coleccion.aggregate(pipeline))
 
-def main():
-    st.title("🛰️ Sistema C2 Táctico - Enjambre FPV")
-    st.markdown("Monitoreo en tiempo real. **Base de Datos:** MongoDB | **Concurrencia:** Celery + TCP Sockets")
+def limpiar_base_datos():
+    """
+    Función auxiliar para borrar los datos residuales de pruebas anteriores.
+    Permite arrancar la demostración del examen en limpio.
+    """
+    db = get_database()
+    db['telemetria'].delete_many({})
 
-    # Botón que fuerza a Streamlit a reejecutar todo el script de arriba a abajo, 
-    # consultando a MongoDB nuevamente.
-    if st.button("🔄 Actualizar Radar"):
-        st.rerun()
+def main():
+    # ======================================================================
+    # ENCABEZADO CENTRADO (Estética de la UI)
+    # ======================================================================
+    st.markdown("<h1 style='text-align: center;'>🛰️ Sistema C2 Táctico - Enjambre FPV</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 18px;'>Monitoreo en tiempo real. <b>Base de Datos:</b> MongoDB | <b>Concurrencia:</b> Celery + TCP Sockets</p>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Contenedor de columnas para centrar los botones
+    col_espacio1, col_btn1, col_btn2, col_espacio2 = st.columns([3, 2, 2, 3])
+    
+    with col_btn1:
+        if st.button("🔄 Actualizar Radar", use_container_width=True):
+            st.rerun()
+            
+    with col_btn2:
+        if st.button("🗑️ Limpiar Historial", use_container_width=True):
+            limpiar_base_datos()
+            st.rerun()
 
     datos = obtener_datos_drones()
 
     if not datos:
-        st.warning("No hay telemetría registrada en la base de datos.")
+        st.markdown("<br><h4 style='text-align: center; color: gray;'>Radar en espera. No hay telemetría registrada.<br>Iniciá los clientes (drones) en la terminal para comenzar.</h4>", unsafe_allow_html=True)
         return
 
     # ======================================================================
-    # RENDERIZADO DEL MAPA TÁCTICO (Folium)
+    # RENDERIZADO DEL MAPA CENTRADO
     # ======================================================================
+    # Usamos columnas para forzar al mapa a ubicarse exactamente en el centro
+    col_mapa1, col_mapa_centro, col_mapa2 = st.columns([1, 10, 1])
     
-    # Truco para forzar el mapa oscuro (Dark Matter) esquivando el bloqueo de API Key
-    url_mapa_oscuro = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    attr_mapa_oscuro = '&copy; OpenStreetMap &copy; CARTO'
-    
-    # Inicializamos el mapa centrado en Mendoza con el tema oscuro
-    mapa_c2 = folium.Map(location=[-32.8908, -68.8272], zoom_start=14, tiles=url_mapa_oscuro, attr=attr_mapa_oscuro)
+    with col_mapa_centro:
+        # Mapa blanco clásico (OpenStreetMap)
+        mapa_c2 = folium.Map(location=[-32.8908, -68.8272], zoom_start=14, tiles="OpenStreetMap")
 
-    # DIBUJAR EL ALCANCE DEL RADAR (Círculo de cobertura)
-    folium.Circle(
-        location=[-32.8908, -68.8272],
-        radius=1000, # Alcance de 1000 metros (1 km)
-        color="cyan", # Color táctico
-        weight=2,
-        fill=True,
-        fill_opacity=0.08,
-        tooltip="Área de Cobertura del C2 (1 km a la redonda)"
-    ).add_to(mapa_c2)
-
-    # Iteramos sobre los resultados agrupados de Mongo
-    for dron in datos:
-        # Lógica condicional: Verde neón táctico si está activo, rojo si es crítico
-        color_marcador = "#39FF14" if dron['estado'] == "active" else "#FF0000"
-
-        # Usamos RegularPolygonMarker para crear el triángulo estilo Call of Duty / UAV
-        folium.RegularPolygonMarker(
-            location=[dron['lat'], dron['lon']],
-            number_of_sides=3, # 3 lados = Triángulo
-            radius=10, # Tamaño del marcador
-            color=color_marcador,
-            weight=1,
+        # Círculo de cobertura del radar (Cian para que resalte en el mapa blanco)
+        folium.Circle(
+            location=[-32.8908, -68.8272],
+            radius=1000,
+            color="#0088ff",
+            weight=2,
             fill=True,
-            fill_color=color_marcador,
-            fill_opacity=0.8,
-            rotation=30, # Rota el triángulo para que la punta mire hacia arriba
-            popup=f"<b>{dron['_id']}</b><br>Batería: {dron['bateria']}%", # Ventana al clickear
-            tooltip=f"ID: {dron['_id']} | Estado: {dron['estado'].upper()}" # Texto al posar el mouse
+            fill_opacity=0.1,
+            tooltip="Área de Cobertura del C2 (1 km a la redonda)"
         ).add_to(mapa_c2)
 
-    # Inyecta el objeto HTML/JS de Folium dentro de la app de Streamlit
-    st_folium(mapa_c2, width=1200, height=600)
+        # Iteramos sobre los drones para dibujarlos
+        for dron in datos:
+            color_marcador = "green" if dron['estado'] == "active" else "red"
+
+            folium.RegularPolygonMarker(
+                location=[dron['lat'], dron['lon']],
+                number_of_sides=3,
+                radius=12,
+                color=color_marcador,
+                weight=2,
+                fill=True,
+                fill_color=color_marcador,
+                fill_opacity=0.9,
+                rotation=30,
+                popup=f"<b>{dron['_id']}</b><br>Batería: {dron['bateria']}%",
+                tooltip=f"ID: {dron['_id']} | Estado: {dron['estado'].upper()}"
+            ).add_to(mapa_c2)
+
+        st_folium(mapa_c2, width=1000, height=500, returned_objects=[])
 
     # ======================================================================
-    # DATAFRAME DE RESPALDO (Tabla visual)
+    # TABLA DE DATOS CENTRADA
     # ======================================================================
-    st.subheader("📊 Estado General del Enjambre")
+    st.markdown("<br><h3 style='text-align: center;'>📊 Estado General del Enjambre</h3>", unsafe_allow_html=True)
     
-    # Mapeamos la salida de Mongo a un diccionario más prolijo para la tabla
     datos_tabla = [
         {
             "Dron ID": d["_id"],
@@ -134,8 +137,11 @@ def main():
         }
         for d in datos
     ]
-    # Renderiza una tabla interactiva (permite ordenar columnas)
-    st.dataframe(datos_tabla, use_container_width=True)
+    
+    # Centramos la tabla usando la misma técnica de columnas
+    col_tabla1, col_tabla_centro, col_tabla2 = st.columns([2, 6, 2])
+    with col_tabla_centro:
+        st.dataframe(datos_tabla, use_container_width=True)
 
 if __name__ == '__main__':
     main()
