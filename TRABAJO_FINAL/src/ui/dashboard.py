@@ -74,24 +74,45 @@ def main():
         return
 
     # ======================================================================
-    # RENDERIZADO DEL MAPA (Folium)
+    # RENDERIZADO DEL MAPA TÁCTICO (Folium)
     # ======================================================================
-    # Inicializamos el mapa centrado en Mendoza.
-    # NOTA TÉCNICA: Usamos "OpenStreetMap" en lugar de "CartoDB" porque es open-source 
-    # y no requiere inyectar una API Key de pago para renderizar las capas de la calle.
-    mapa_c2 = folium.Map(location=[-32.8908, -68.8272], zoom_start=14, tiles="OpenStreetMap")
+    
+    # Truco para forzar el mapa oscuro (Dark Matter) esquivando el bloqueo de API Key
+    url_mapa_oscuro = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    attr_mapa_oscuro = '&copy; OpenStreetMap &copy; CARTO'
+    
+    # Inicializamos el mapa centrado en Mendoza con el tema oscuro
+    mapa_c2 = folium.Map(location=[-32.8908, -68.8272], zoom_start=14, tiles=url_mapa_oscuro, attr=attr_mapa_oscuro)
+
+    # DIBUJAR EL ALCANCE DEL RADAR (Círculo de cobertura)
+    folium.Circle(
+        location=[-32.8908, -68.8272],
+        radius=1000, # Alcance de 1000 metros (1 km)
+        color="cyan", # Color táctico
+        weight=2,
+        fill=True,
+        fill_opacity=0.08,
+        tooltip="Área de Cobertura del C2 (1 km a la redonda)"
+    ).add_to(mapa_c2)
 
     # Iteramos sobre los resultados agrupados de Mongo
     for dron in datos:
-        # Lógica condicional: Si está 'active' es verde, si es 'low_battery' es rojo
-        color_marcador = "green" if dron['estado'] == "active" else "red"
-        icono = "bolt" if dron['estado'] == "active" else "info-sign"
+        # Lógica condicional: Verde neón táctico si está activo, rojo si es crítico
+        color_marcador = "#39FF14" if dron['estado'] == "active" else "#FF0000"
 
-        folium.Marker(
+        # Usamos RegularPolygonMarker para crear el triángulo estilo Call of Duty / UAV
+        folium.RegularPolygonMarker(
             location=[dron['lat'], dron['lon']],
-            popup=f"<b>{dron['_id']}</b><br>Batería: {dron['bateria']}%", # Ventana al hacer click
-            tooltip=f"ID: {dron['_id']}", # Texto al pasar el mouse por encima
-            icon=folium.Icon(color=color_marcador, icon=icono)
+            number_of_sides=3, # 3 lados = Triángulo
+            radius=10, # Tamaño del marcador
+            color=color_marcador,
+            weight=1,
+            fill=True,
+            fill_color=color_marcador,
+            fill_opacity=0.8,
+            rotation=30, # Rota el triángulo para que la punta mire hacia arriba
+            popup=f"<b>{dron['_id']}</b><br>Batería: {dron['bateria']}%", # Ventana al clickear
+            tooltip=f"ID: {dron['_id']} | Estado: {dron['estado'].upper()}" # Texto al posar el mouse
         ).add_to(mapa_c2)
 
     # Inyecta el objeto HTML/JS de Folium dentro de la app de Streamlit
