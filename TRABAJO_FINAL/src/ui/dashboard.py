@@ -5,6 +5,7 @@ import folium
 from streamlit_folium import st_folium
 import sys
 import os
+import time  # <-- NUEVO: Necesario para el intervalo de actualización automática
 
 # ==============================================================================
 # RESOLUCIÓN DE RUTAS (PYTHONPATH)
@@ -18,7 +19,7 @@ from src.db.mongo_setup import get_database
 
 # ==============================================================================
 # Módulo: Interfaz Visual y Renderizado GIS (Frontend)
-# Consumo de MongoDB y mapeo geoespacial en tiempo real.
+# Consumo de MongoDB y mapeo geoespacial en tiempo real con soporte de Polling.
 # ==============================================================================
 
 # Configura el layout de la página web para ocupar todo el ancho del monitor
@@ -63,14 +64,18 @@ def main():
     st.markdown("<p style='text-align: center; font-size: 18px;'>Monitoreo en tiempo real. <b>Base de Datos:</b> MongoDB | <b>Concurrencia:</b> Celery + TCP Sockets</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # Contenedor de columnas para centrar los botones
-    col_espacio1, col_btn1, col_btn2, col_espacio2 = st.columns([3, 2, 2, 3])
+    # Contenedor de columnas para los controles del radar
+    col_esp1, col_auto, col_btn_act, col_btn_limpiar, col_esp2 = st.columns([2, 2, 2, 2, 2])
     
-    with col_btn1:
-        if st.button("🔄 Actualizar Radar", use_container_width=True):
+    with col_auto:
+        # Checkbox para activar el barrido automático (Polling)
+        auto_refresh = st.checkbox("📡 Activar Auto-Rastreo (2s)")
+            
+    with col_btn_act:
+        if st.button("🔄 Forzar Actualización", use_container_width=True):
             st.rerun()
             
-    with col_btn2:
+    with col_btn_limpiar:
         if st.button("🗑️ Limpiar Historial", use_container_width=True):
             limpiar_base_datos()
             st.rerun()
@@ -79,6 +84,10 @@ def main():
 
     if not datos:
         st.markdown("<br><h4 style='text-align: center; color: gray;'>Radar en espera. No hay telemetría registrada.<br>Iniciá los clientes (drones) en la terminal para comenzar.</h4>", unsafe_allow_html=True)
+        # Si el auto-rastreo está activo, sigue buscando aunque no haya datos
+        if auto_refresh:
+            time.sleep(2)
+            st.rerun()
         return
 
     # ======================================================================
@@ -138,10 +147,18 @@ def main():
         for d in datos
     ]
     
-    # Centramos la tabla usando la misma técnica de columnas
     col_tabla1, col_tabla_centro, col_tabla2 = st.columns([2, 6, 2])
     with col_tabla_centro:
         st.dataframe(datos_tabla, use_container_width=True)
+
+    # ======================================================================
+    # LÓGICA DE ACTUALIZACIÓN EN TIEMPO REAL (POLLING)
+    # ======================================================================
+    # Si el usuario tildó el auto-rastreo, esperamos 2 segundos y forzamos
+    # a la interfaz a recargarse por completo, dibujando las nuevas posiciones.
+    if auto_refresh:
+        time.sleep(2)
+        st.rerun()
 
 if __name__ == '__main__':
     main()
