@@ -120,3 +120,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    #nombre de ultimo commit : feat(db): implementar script de backup lógico con mongodump y compresión gzip
